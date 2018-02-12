@@ -28,7 +28,7 @@ class Game {
 
         for (i = 0; i < this.players.length; i++) {
             this.players[i].hand = this.deck.getHand();
-            console.log("Player", player[i], "hand:", this.deck);
+            console.log("Player", player[i], "hand:", this.players[i].hand);
         }
 
         let lastCard = player[3].hand.getLastCard();

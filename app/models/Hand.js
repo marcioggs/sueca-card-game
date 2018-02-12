@@ -13,8 +13,8 @@ class Hand {
     }
 
     getLastCard() {
-        return this.cards[this.cards.length];
+        return this.cards[this.cards.length - 1];
     }
 };
 
-module.exports = Player;
+module.exports = Hand;

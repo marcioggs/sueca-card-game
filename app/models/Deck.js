@@ -1,4 +1,5 @@
 let Card = require('./Card.js');
+let Hand = require('./Hand.js');
 let Utils = require('./Utils.js');
 
 class Deck {
@@ -30,7 +31,7 @@ class Deck {
             throw new Error("Deck doesn't have 10 cards.");
         }
 
-        return this.cards.splice(0, 10);
+        return new Hand(this.cards.splice(0, 10));
     }
 
 };
