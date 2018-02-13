@@ -1,4 +1,5 @@
 let Player = require('../../app/models/Player.js');
+let Deck = require('../../app/models/Deck.js');
 
 class Game {
 
@@ -12,7 +13,7 @@ class Game {
     }
 
     addPlayer(playerName) {
-        if (this.players.length > 4) {
+        if (this.players.length + 1 > 4) {
             throw new Error("Only 4 players are allowed.");
         }
         let player = new Player(this.players.length, playerName, this.players.length % 2);
@@ -28,12 +29,12 @@ class Game {
         this.deck = new Deck();
         this.deck.shuffleCards();
 
-        for (i = 0; i < this.players.length; i++) {
+        for (let i = 0; i < this.players.length; i++) {
             this.players[i].hand = this.deck.getHand();
-            console.log("Player", player[i], "hand:", this.players[i].hand);
+            console.log("Player", this.players[i], "hand:", this.players[i].hand);
         }
 
-        let lastCard = player[3].hand.getLastCard();
+        let lastCard = this.players[3].hand.getLastCard();
         this.trumpSuit = lastCard.suit;
         //TODO: Mudar para o último a embaralhar.
         return lastCard;
