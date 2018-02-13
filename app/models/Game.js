@@ -1,3 +1,5 @@
+let Player = require('../../app/models/Player.js');
+
 class Game {
 
     constructor() {
@@ -9,11 +11,11 @@ class Game {
         this.trumpSuit = null;
     }
 
-    addPlayer(player) {
+    addPlayer(playerName) {
         if (this.players.length > 4) {
             throw new Error("Only 4 players are allowed.");
         }
-        player.team = this.players.length % 2;
+        let player = new Player(this.players.length, playerName, this.players.length % 2);
         this.players.push(player);
         console.log("New player. Players count:", this.players.length);
     }

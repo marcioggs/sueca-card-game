@@ -11,7 +11,7 @@ describe('Hand', function() {
     });
   });
 
-  describe('#removeCard()', function() {
+  describe('#removeCard', function() {
 
     let card1 = new Card('2', '♠');
     let card2 = new Card('3', '♠');
@@ -39,7 +39,7 @@ describe('Hand', function() {
 
   });
 
-  describe('#getLastcard()', function() {
+  describe('#getLastcard', function() {
     it('should return the last card of the hand', function() {
       let card1 = new Card('2', '♠');
       let card2 = new Card('3', '♠');

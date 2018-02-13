@@ -6,15 +6,15 @@ describe('Trick', function() {
   describe('[constructor]', function() {
     let trick = new Trick();
 
-    it('should have the cards property', function() {
+    it('should create cards property', function() {
       assert.equal('cards' in trick, true);
     });
 
-    it('should have the players property', function() {
+    it('should create players property', function() {
       assert.equal('players' in trick, true);
     });
 
-    it('should have the suit property', function() {
+    it('should create suit property', function() {
       assert.equal('suit' in trick, true);
     });
   });

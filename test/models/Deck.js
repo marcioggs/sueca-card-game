@@ -13,14 +13,14 @@ describe('Deck', function() {
     });
   });
 
-  describe('#shuffleCards()', function() {
+  describe('#shuffleCards', function() {
     it('should leave deck with the same previous ammount of cards', function() {
       deck.shuffleCards();
       assert.equal(deck.cards.length, 40);
     });
   });
 
-  describe('#getHand()', function() {
+  describe('#getHand', function() {
     it('should leave deck with minus 10 cards for each call', function() {
 
       deck.getHand();
