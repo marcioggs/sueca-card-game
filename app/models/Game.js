@@ -6,7 +6,7 @@ class Game {
     constructor() {
         this.players = [];
         this.deck = null;
-        this.currentPlayerTurn = null; //TODO: Use
+        this.currentPlayerTurn = null;
         this.trick = null;
         this.packOfCards = [[], []];
         this.trumpSuit = null;
@@ -36,6 +36,7 @@ class Game {
 
         let lastCard = this.players[3].hand.getLastCard();
         this.trumpSuit = lastCard.suit;
+        this.currentPlayerTurn = 0;
         //TODO: Mudar para o último a embaralhar.
         return lastCard;
     }

@@ -11,12 +11,12 @@ describe('Game', function() {
 
     it('should create constructor properties properly', function() {
       let game = new Game();
-      assert.equal('players' in game, true);
-      assert.equal('deck' in game, true);
-      assert.equal('currentPlayerTurn' in game, true);
-      assert.equal('trick' in game, true);
-      assert.equal('packOfCards' in game, true);
-      assert.equal('trumpSuit' in game, true);
+      assert.property(game, 'players');
+      assert.property(game, 'deck');
+      assert.property(game, 'currentPlayerTurn');
+      assert.property(game, 'trick');
+      assert.property(game, 'packOfCards');
+      assert.property(game, 'trumpSuit');
     });
 
   });
@@ -26,8 +26,8 @@ describe('Game', function() {
     game.addPlayer('John');
     game.addPlayer('Felipe');
     
-    it('should increment players length', function() {
-      assert.notEqual(game.players.length, 0);
+    it('should have added players to players array', function() {
+      assert.isNotEmpty(game.players);
     });
     
     it('should assign a player id', function() {
@@ -69,10 +69,10 @@ describe('Game', function() {
     let trumpCard = game.start();
 
     it('each player should have 10 cards', function() {
-      assert.equal(game.players[0].hand.cards.length, 10);
-      assert.equal(game.players[1].hand.cards.length, 10);
-      assert.equal(game.players[2].hand.cards.length, 10);
-      assert.equal(game.players[3].hand.cards.length, 10);
+      assert.lengthOf(game.players[0].hand.cards, 10);
+      assert.lengthOf(game.players[1].hand.cards, 10);
+      assert.lengthOf(game.players[2].hand.cards, 10);
+      assert.lengthOf(game.players[3].hand.cards, 10);
     });
 
     it('trump suit should be the suit of the last card from the deck', function() {
@@ -81,6 +81,10 @@ describe('Game', function() {
 
     it('returned card must be the last of the deck', function() {
       assert.equal(game.players[3].hand.cards[9], trumpCard);
+    });
+    
+    it('first player to play should be the first one added', function() {
+      assert.equal(game.currentPlayerTurn, 0);
     });
 
   });

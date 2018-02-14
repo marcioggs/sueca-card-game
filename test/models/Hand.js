@@ -1,4 +1,4 @@
-let assert = require('assert');
+let assert = require('chai').assert;
 let Hand = require('../../app/models/Hand.js');
 let Card = require('../../app/models/Card.js');
 
@@ -30,7 +30,7 @@ describe('Hand', function() {
     });
 
     it('if one card was removed the hand should have n - 1 cards', function() {
-      assert.equal(hand.cards.length, 1);
+      assert.lengthOf(hand.cards, 1);
     });
 
     it('should return false if the card was not removed', function() {

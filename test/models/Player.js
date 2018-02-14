@@ -1,4 +1,4 @@
-let assert = require('assert');
+let assert = require('chai').assert;
 let Player = require('../../app/models/Player.js');
 
 describe('Player', function() {

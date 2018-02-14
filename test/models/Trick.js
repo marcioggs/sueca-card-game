@@ -1,4 +1,4 @@
-let assert = require('assert');
+let assert = require('chai').assert;
 let Trick = require('../../app/models/Trick.js');
 
 describe('Trick', function() {
@@ -6,17 +6,12 @@ describe('Trick', function() {
   describe('[constructor]', function() {
     let trick = new Trick();
 
-    it('should create cards property', function() {
-      assert.equal('cards' in trick, true);
+    it('should create constructor properties properly', function() {
+      assert.property(trick, 'cards');
+      assert.property(trick, 'players');
+      assert.property(trick, 'suit');
     });
 
-    it('should create players property', function() {
-      assert.equal('players' in trick, true);
-    });
-
-    it('should create suit property', function() {
-      assert.equal('suit' in trick, true);
-    });
   });
 
 });

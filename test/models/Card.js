@@ -1,4 +1,4 @@
-let assert = require('assert');
+let assert = require('chai').assert;
 let Card = require('../../app/models/Card.js'); //TODO: All these ../ are creepy. See ttps://gist.github.com/branneman/8048520
 
 describe('Card', function() {
