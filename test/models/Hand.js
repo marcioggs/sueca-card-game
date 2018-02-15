@@ -48,6 +48,18 @@ describe('Hand', function() {
     });
   });
 
+  describe('#hasCardOfSuit', function() {
+    let hand = new Hand([new Card('2', '♠'), new Card('3', '♥'), new Card('4', '♦')]);
+    
+    it('should return true if have card of the informed suit', function() {
+      assert.isTrue(hand.hasCardOfSuit('♥'));
+    });
+
+    it('should return false if doesnt have card of the informed suit', function() {
+      assert.isFalse(hand.hasCardOfSuit('♣'));
+    });
+  });
+
 });
 
 

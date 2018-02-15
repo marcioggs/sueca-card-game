@@ -15,6 +15,18 @@ class Hand {
     getLastCard() {
         return this.cards[this.cards.length - 1];
     }
+
+    hasCardOfSuit(suit) {
+        let found = false;
+
+        for (let i = 0; i < this.cards.length && !found; i++) {
+            if (this.cards[i].suit == suit) {
+                found = true;
+            }
+        }
+
+        return found;
+    }
 };
 
 module.exports = Hand;
