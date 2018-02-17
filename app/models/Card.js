@@ -22,6 +22,10 @@ class Card {
         let i = Card.allRanks().findIndex(e => e == rank);
         return Card.allPoints()[i];
     }
+    
+    toString() {
+        return '[' + this.rank + ', ' + this.suit + ']';
+    }
 };
 
 module.exports = Card;
