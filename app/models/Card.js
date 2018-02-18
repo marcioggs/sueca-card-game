@@ -26,6 +26,10 @@ class Card {
     toString() {
         return '[' + this.rank + ', ' + this.suit + ']';
     }
+
+    getRankIndex() {
+        return Card.allRanks().findIndex(e => e == this.rank);
+    }
 };
 
 module.exports = Card;

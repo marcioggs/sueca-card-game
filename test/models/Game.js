@@ -156,6 +156,79 @@ describe('Game', function() {
       assert.lengthOf(game.packOfCards[0], 4);
     });
 
+    it('the team that won most points should win the game', function() {
+      game = new Game();
+      game.addPlayer('John');
+      game.addPlayer('Felipe');
+      game.addPlayer('Sara');
+      game.addPlayer('Raphael');
+      game.start();
+      mock(game); //TODO: Find a lib to mock easily.
+
+      //team 0 won 0 points
+      game.playCard(0, new Card('2', '♠'));
+      game.playCard(1, new Card('3', '♠'));
+      game.playCard(2, new Card('5', '♠'));
+      game.playCard(3, new Card('4', '♠'));
+
+      //team 0 won 13 points
+      game.playCard(2, new Card('J', '♠'));
+      game.playCard(3, new Card('7', '♠'));
+      game.playCard(0, new Card('2', '♥'));
+      game.playCard(1, new Card('6', '♠'));
+
+      //team 1 won 12 points
+      game.playCard(0, new Card('Q', '♥'));
+      game.playCard(1, new Card('7', '♥'));
+      game.playCard(2, new Card('3', '♥'));
+      game.playCard(3, new Card('5', '♥'));
+      
+      //team 0 won 13 points
+      game.playCard(1, new Card('Q', '♠'));
+      game.playCard(2, new Card('K', '♠'));
+      game.playCard(3, new Card('J', '♥'));
+      game.playCard(0, new Card('K', '♥'));
+      
+      //team 1 won 3 points
+      game.playCard(0, new Card('4', '♣'));
+      game.playCard(1, new Card('2', '♣'));
+      game.playCard(2, new Card('3', '♣'));
+      game.playCard(3, new Card('J', '♣'));
+      
+      //team 1 won 21 points
+      game.playCard(3, new Card('A', '♥'));
+      game.playCard(0, new Card('5', '♣'));
+      game.playCard(1, new Card('7', '♣'));
+      game.playCard(2, new Card('4', '♥'));
+      
+      //team 1 won 15 points
+      game.playCard(3, new Card('K', '♣'));
+      game.playCard(0, new Card('6', '♣'));
+      game.playCard(1, new Card('4', '♦'));
+      game.playCard(2, new Card('A', '♠'));
+      
+      //team 1 won 3 points
+      game.playCard(3, new Card('J', '♦'));
+      game.playCard(0, new Card('2', '♦'));
+      game.playCard(1, new Card('5', '♦'));
+      game.playCard(2, new Card('3', '♦'));
+      
+      //team 1 won 8 points
+      game.playCard(3, new Card('K', '♦'));
+      game.playCard(0, new Card('Q', '♣'));
+      game.playCard(1, new Card('6', '♦'));
+      game.playCard(2, new Card('Q', '♦'));
+      
+      //team 0 won 32 points
+      game.playCard(3, new Card('A', '♦'));
+      game.playCard(0, new Card('A', '♣'));
+      game.playCard(1, new Card('7', '♦'));
+      let result = game.playCard(2, new Card('6', '♥'));
+
+      assert.equal(result[0], 58);
+      assert.equal(result[1], 62);
+    });
+
   });
 
 });
@@ -164,58 +237,58 @@ function mock(game) {
   let cards = null;
 
   cards = [
-    new Card('2', '♠'),
-    new Card('2', '♥'),
-    new Card('Q', '♥'),
-    new Card('K', '♥'),
-    new Card('4', '♣'),
-    new Card('5', '♣'),
-    new Card('6', '♣'),
-    new Card('Q', '♣'),
-    new Card('A', '♣'),
-    new Card('2', '♦') ]; 
+    new Card('2', '♠'),//
+    new Card('2', '♥'),//
+    new Card('Q', '♥'),//
+    new Card('K', '♥'),//
+    new Card('4', '♣'),//
+    new Card('5', '♣'),//
+    new Card('6', '♣'),//
+    new Card('Q', '♣'),//
+    new Card('A', '♣'),//
+    new Card('2', '♦') ]; //
 
   game.players[0].hand = new Hand(cards);
 
   cards = [
-    new Card('3', '♠'),
-    new Card('6', '♠'),
-    new Card('Q', '♠'),
-    new Card('7', '♥'),
-    new Card('2', '♣'),
-    new Card('7', '♣'),
-    new Card('4', '♦'),
-    new Card('5', '♦'),
-    new Card('6', '♦'),
-    new Card('7', '♦') ]; 
+    new Card('3', '♠'),//
+    new Card('6', '♠'),//
+    new Card('Q', '♠'),//
+    new Card('7', '♥'),//
+    new Card('2', '♣'),//
+    new Card('7', '♣'),//
+    new Card('4', '♦'),//
+    new Card('5', '♦'),//
+    new Card('6', '♦'),//
+    new Card('7', '♦') ]; //
 
   game.players[1].hand = new Hand(cards);
 
   cards = [
-    new Card('5', '♠'),
-    new Card('J', '♠'),
-    new Card('K', '♠'),
-    new Card('A', '♠'),
-    new Card('3', '♥'),
-    new Card('4', '♥'),
-    new Card('6', '♥'),
-    new Card('3', '♣'),
-    new Card('3', '♦'),
-    new Card('Q', '♦') ];
+    new Card('5', '♠'),//
+    new Card('J', '♠'),//
+    new Card('K', '♠'),//
+    new Card('A', '♠'),//
+    new Card('3', '♥'),//
+    new Card('4', '♥'),//
+    new Card('6', '♥'),//
+    new Card('3', '♣'),//
+    new Card('3', '♦'),//
+    new Card('Q', '♦') ];//
 
   game.players[2].hand = new Hand(cards);
 
   cards = [
-    new Card('4', '♠'),
-    new Card('7', '♠'),
-    new Card('5', '♥'),
-    new Card('J', '♥'),
+    new Card('4', '♠'),//
+    new Card('7', '♠'),//
+    new Card('5', '♥'),//
+    new Card('J', '♥'),//
     new Card('A', '♥'),
-    new Card('J', '♣'),
-    new Card('K', '♣'),
-    new Card('J', '♦'),
-    new Card('K', '♦'),
-    new Card('A', '♦') ];
+    new Card('J', '♣'),//
+    new Card('K', '♣'),//
+    new Card('J', '♦'),//
+    new Card('K', '♦'),//
+    new Card('A', '♦') ];//
 
   game.players[3].hand = new Hand(cards);
   game.trumpSuit = '♥';
