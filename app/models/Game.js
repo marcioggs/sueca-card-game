@@ -5,119 +5,103 @@ let Util = require('util');
 
 class Game {
 
-    constructor() {
-        this.players = [];
-        this.deck = null;
-        this.currentPlayerTurn = null;
-        this.trick = null;
-        this.packOfCards = [[], []];
-        this.trumpSuit = null;
-        this.handPoints = [0, 0];
-    }
-
-    addPlayer(playerName) {
-        if (this.players.length + 1 > 4) {
-            throw new Error('Only 4 players are allowed.');
+    constructor(players, playerIdToShuffleCards) {
+        if (players.length != 4) {
+            throw new Error('There must be 4 players in the room.');
         }
-        let player = new Player(this.players.length, playerName, this.players.length % 2);
-        this.players.push(player);
-        console.log('New player. Players count:', this.players.length);
+        if (Player.getPlayerIndex(players, playerIdToShuffleCards) < 0) {
+            throw new Error(Util.format('Player with index %s doesnt exists on players list', playerIdToShuffleCards));
+        }
+
+        this.players = players;
+        this.playerIdToShuffleCards = playerIdToShuffleCards;
+        this.deck = null;
+        this.trick = null;
+        this._cardsWonByTeam = [[], []];
+        this.pointsWonByTeam = [0, 0];
+        this.trumpCard = null;
+        this.wasDraw = false;
+        this.wonGameSetPoints = null;
+        this.teamThatWon = null;
+        this._playerIdThatWonLastTrick = null;
     }
 
     start() {
-        if (this.players.length != 4) {
-            throw new Error('There must be 4 players in the room.');
-        }
-
         this.deck = new Deck();
         this.deck.shuffleCards();
-        this.trick = new Trick();
+        this._distributeCards();
+        let playerIdOnRightOfShuffler = (this.playerIdToShuffleCards + 3) % 4;
+        this.trumpCard = this.players[playerIdOnRightOfShuffler].hand.getLastCard();
+        this.currentPlayerTurn = this.playerIdToShuffleCards;
+    }
 
+    _distributeCards() {
         for (let i = 0; i < this.players.length; i++) {
-            this.players[i].hand = this.deck.getHand();
-            //console.log('Player', this.players[i], 'hand:', this.players[i].hand);
+            this.players[(this.playerIdToShuffleCards + i) % 4].hand = this.deck.getHand();
         }
-
-        let lastCard = this.players[3].hand.getLastCard();
-        this.trumpSuit = lastCard.suit;
-        this.currentPlayerTurn = 0;
-        //TODO: Mudar para o último a embaralhar.
-        return lastCard;
     }
 
-    playCard(playerId, card) {
-
-        let player = Player.getPlayer(this.players, playerId);
-
-        if (player == null) {
-            throw new Error(Util.format('Player with id %s doesnt exists', playerId));
+    startTrick() {
+        if(this._gameHaveEnded()) {
+            return null;
         }
-
-        if (Player.getPlayerIndex(this.players, playerId) != this.currentPlayerTurn) {
-            throw new Error(Util.format('Its not players %s turn, its %s', playerId, this.currentPlayerTurn));
+        if (this.trick != null) {
+            throw new Error('There is already a trick in progress.');
         }
-
-        if (this.trick.cards.length == 0) { //First card of the trick chooses the suit.
-            this.trick.suit = card.suit;
-        } else if (card.suit != this.trick.suit &&
-                player.hand.hasCardOfSuit(this.trick.suit)) {
-                throw new Error(Util.format('Player must play a card of suit: %s', this.trick.suit));
-        }
-
-        if(!player.hand.removeCard(card)) {
-            throw new Error(Util.format('Player %s doesnt have card %s', player.id, card.toString()));
-        }
-
-        this.trick.cards.push(card);
-        this.trick.players.push(player);
-
-        this.currentPlayerTurn = (this.currentPlayerTurn + 1) % this.players.length;
-
-        if (this.trick.cards.length == 4) {
-            this._finishTrick();
-            if (this.players[0].hand.cards.length == 0) {
-                return this._finishHand();
-            }
-        }
-        
+        let firstPlayerOnTrick = this._playerIdThatWonLastTrick === null? this.playerIdToShuffleCards : this._playerIdThatWonLastTrick;
+        this.trick = new Trick(this.players, this.trumpCard.suit, firstPlayerOnTrick);
+        return this.trick;
     }
 
-    _finishTrick() {
-        let winningCard = this.trick.cards[0];
-        let winningTeam = this.trick.players[0].team;
-        let winningPlayerId = this.trick.players[0].id;
-
-        for (let i = 1; i < this.trick.cards.length; i++) {
-            let card = this.trick.cards[i];
-
-            //TODO: Refactor to simplify.
-            let winByTrumpCard = (card.suit == this.trumpSuit && winningCard.suit != this.trumpSuit);
-            let lostByTrumpCard = (winningCard.suit == this.trumpSuit && card.suit != this.trumpSuit);
-            let isFromTrickSuit = card.suit == this.trick.suit;
-            let bothCardsHaveTrumpSuit = (card.suit == this.trumpSuit && winningCard.suit == this.trumpSuit)
-            let winByHighestrank = (!lostByTrumpCard && !winByTrumpCard && (isFromTrickSuit || bothCardsHaveTrumpSuit) && card.getRankIndex() > winningCard.getRankIndex());
-
-            if (winByTrumpCard || (winByHighestrank)) {
-                winningCard = card;
-                winningTeam = this.trick.players[i].team;
-                winningPlayerId = this.trick.players[i].id;
-            }
-        }
-
-        this.packOfCards[winningTeam] = this.packOfCards[winningTeam].concat(this.trick.cards);
-        //The player that won the trick should start the next one.
-        this.currentPlayerTurn = winningPlayerId;
-        this.trick = new Trick();
+    _gameHaveEnded() {
+        return this._cardsWonByTeam[0].length + this._cardsWonByTeam[1].length === 40;
     }
 
-    _finishHand() {
-        for (let i = 0; i < this.packOfCards.length; i++) {
-            for (let j = 0; j < this.packOfCards[i].length; j++) {
-                this.handPoints[i] = this.handPoints[i] + this.packOfCards[i][j].point;
+    finishTrick() {
+        if (this.trick === null) {
+            throw new Error('There is no trick in progress.');
+        }
+        this.trick.finish();
+        this._cardsWonByTeam[this.trick.playerThatWon.team] = this._cardsWonByTeam[this.trick.playerThatWon.team].concat(this.trick.cardsPlayed);
+        this._playerIdThatWonLastTrick = this.trick.playerThatWon.id;
+        this.trick = null;
+    }
+
+    finish() {
+        if (!this._gameHaveEnded()) {
+            throw new Error('There arent 40 cards on the deck.');
+        }
+        this._countWonCardPointsByTeam();
+        this._countWonGamePointsByTeam();
+    }
+
+    _countWonCardPointsByTeam() {
+        for (let i = 0; i < this._cardsWonByTeam.length; i++) {
+            for (let j = 0; j < this._cardsWonByTeam[i].length; j++) {
+                this.pointsWonByTeam[i] += this._cardsWonByTeam[i][j].point;
             }
         }
-        
-        return this.handPoints;
+    }
+
+    _countWonGamePointsByTeam() {
+        let pointsWonByWinningTeam = null;
+        if (this.pointsWonByTeam[0] === this.pointsWonByTeam[1]) {
+            this.wasDraw = true;
+            this.gamePoints = 0;
+        } else if (this.pointsWonByTeam[0] > this.pointsWonByTeam[1]) {
+            this.teamThatWon = 0;
+        } else {
+            this.teamThatWon = 1;
+        }
+        pointsWonByWinningTeam = this.pointsWonByTeam[this.teamThatWon];
+
+        if (pointsWonByWinningTeam === 120) {
+            this.wonGameSetPoints = 4;
+        } else if (pointsWonByWinningTeam > 90) {
+            this.wonGameSetPoints = 2;
+        } else {
+            this.wonGameSetPoints = 1;
+        }
     }
       
 };

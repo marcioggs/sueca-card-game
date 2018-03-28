@@ -16,7 +16,7 @@ class Player {
     }
 
     static getPlayerIndex(players, id) {
-        return players.findIndex(e => e.id == id);
+        return players.findIndex(e => e.id === id);
     }
 };
 

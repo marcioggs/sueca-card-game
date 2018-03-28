@@ -5,7 +5,7 @@ class Hand {
     }
 
     removeCard(card) {
-        let i = this.cards.findIndex(e => e.rank == card.rank && e.suit == card.suit);
+        let i = this.cards.findIndex(e => e.rank === card.rank && e.suit === card.suit);
         if (i > -1) {
             this.cards.splice(i, 1);
         }
@@ -20,7 +20,7 @@ class Hand {
         let found = false;
 
         for (let i = 0; i < this.cards.length && !found; i++) {
-            if (this.cards[i].suit == suit) {
+            if (this.cards[i].suit === suit) {
                 found = true;
             }
         }

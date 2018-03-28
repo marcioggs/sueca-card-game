@@ -19,7 +19,7 @@ class Card {
     }
 
     _setPoint(rank) {
-        let i = Card.allRanks().findIndex(e => e == rank);
+        let i = Card.allRanks().findIndex(e => e === rank);
         return Card.allPoints()[i];
     }
     
@@ -28,7 +28,7 @@ class Card {
     }
 
     getRankIndex() {
-        return Card.allRanks().findIndex(e => e == this.rank);
+        return Card.allRanks().findIndex(e => e === this.rank);
     }
 };
 

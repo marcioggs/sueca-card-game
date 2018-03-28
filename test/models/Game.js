@@ -6,80 +6,48 @@ let Hand = require('../../app/models/Hand.js');
 let Player = require('../../app/models/Player.js');
 
 //TODO: How to suppress log messages during tests?
-//TODO: Make all tests independent without repeating a lot of setup code.
-
 describe('Game', function() {
 
   describe('[constructor]', function() {
+    it('should not let start the game with more or less than 4 players', function() {
+      let players = []
 
-    it('should create constructor properties properly', function() {
-      let game = new Game();
-      assert.property(game, 'players');
-      assert.property(game, 'deck');
-      assert.property(game, 'currentPlayerTurn');
-      assert.property(game, 'trick');
-      assert.property(game, 'packOfCards');
-      assert.property(game, 'trumpSuit');
-    });
-
-  });
-
-  describe('#addPlayer', function() {
-    let game = new Game();
-    game.addPlayer('John');
-    game.addPlayer('Felipe');
-    
-    it('should have added players to players array', function() {
-      assert.isNotEmpty(game.players);
-    });
-    
-    it('should assign a player id', function() {
-      assert.isNotNull(game.players[0]);
-    });
-
-    it('first parameter should be the added player name', function() {
-      assert.equal(game.players[0].name, 'John');
-    });
-
-    it('first added player should be on team 0', function() {
-      assert.equal(game.players[0].team, 0);
-    });
-
-    it('second added player should be on team 1', function() {
-      assert.equal(game.players[1].team, 1);
-    });
-
-    it('should throw error when more than 4 players are added', function() {
-      
+      players.push(new Player(0, 'Marcio', 0));
       expect(function() {
-        game.addPlayer('Sara');
-        game.addPlayer('Raphael');
-        game.addPlayer('Nath');
-        
-      }).to.throw('Only 4 players are allowed.');
+        new Game(players, 0);
+      }).to.throw('There must be 4 players in the room.');
 
+      players.push(new Player(1, 'Gabriel', 1));
+      expect(function() {
+        new Game(players, 0);
+      }).to.throw('There must be 4 players in the room.');
+
+      players.push(new Player(2, 'Gabriel', 0));
+      expect(function() {
+        new Game(players, 0);
+      }).to.throw('There must be 4 players in the room.');
     });
-    
   });
+
+  //TODO: Remove
+  /*       delete game.players.splice(4, 1);
+        let trumpCard = game.start(); */
 
   describe('#start', function() {
-    
-    let game = new Game();
-    game.addPlayer('John');
-    game.addPlayer('Felipe');
-    game.addPlayer('Sara');
-    game.addPlayer('Raphael');
 
-    it('should not let start the game with more or less than 4 players', function() {
-      expect(function() {
-        game.addPlayer('Thais');
-        game.start();
-      }).to.throw('Only 4 players are allowed.');      
+    let game = null;
+
+    before(function() {
+      let players = [];
+      players.push(new Player(0, 'Marcio', 0));
+      players.push(new Player(1, 'Gabriel', 1));
+      players.push(new Player(2, 'Gomes', 0));
+      players.push(new Player(3, 'Silva', 1));
+
+      game = new Game(players, 0);
+      game.start();
     });
-
-    delete game.players.splice(4, 1);
-    let trumpCard = game.start();
-
+    
     it('each player should have 10 cards', function() {
       assert.lengthOf(game.players[0].hand.cards, 10);
       assert.lengthOf(game.players[1].hand.cards, 10);
@@ -87,209 +55,182 @@ describe('Game', function() {
       assert.lengthOf(game.players[3].hand.cards, 10);
     });
 
-    it('trump suit should be the suit of the last card from the deck', function() {
-      assert.equal(game.players[3].hand.cards[9].suit, game.trumpSuit);
+    it('trump card must be the last of the deck', function() {
+      assert.deepEqual(game.players[3].hand.cards[9], game.trumpCard);
     });
-
-    it('returned card must be the last of the deck', function() {
-      assert.equal(game.players[3].hand.cards[9], trumpCard);
-    });
-    
-    it('first player to play should be the first one added', function() {
-      assert.equal(game.currentPlayerTurn, 0);
-    });
-
   });
 
-  describe('#playCard', function() {
+  describe('#startTrick', function() {
 
-    let game = new Game();
-    game.addPlayer('John');
-    game.addPlayer('Felipe');
-    game.addPlayer('Sara');
-    game.addPlayer('Raphael');
-    game.start();
-    mock(game); //TODO: Find a lib to mock easily.
+    let game = null;
 
-    it('should throw an error if it doesnt exists a player with the id informed', function() {
+    beforeEach(function() {
+      game = mockGame();
+    });
+
+    it('should return null if the game already ended'); //TODO: Test.
+
+    it('should throw if there is already a trick in progress', function() {
+      game.startTrick();
       expect(function() {
-        game.playCard(5, new Card('5', '♠'));
-      }).to.throw('Player with id 5 doesnt exists');  
+        game.startTrick();
+      }).to.throw('There is already a trick in progress.');
     });
 
-    it('should throw an error if its not the player informed turn', function() {
+    it('first player of the first trick should be the shuffled the cards', function() {
+      assert.equal(game.startTrick().currentPlayerIdTurn, 0);
+    });
+
+    it('first player of the others trick should be the won last trick', function() {
+      game._playerIdThatWonLastTrick = 3;
+      assert.equal(game.startTrick().currentPlayerIdTurn, 3);
+    });
+  });
+
+  describe('#finishTrick', function() {
+    it('should throw if there isnt a trick in progress', function() {
+      let game = mockGame();
       expect(function() {
-        game.playCard(2, new Card('5', '♠'));
-      }).to.throw('Its not players 2 turn');  
+        game.finishTrick();
+      }).to.throw('There is no trick in progress.');
+    });
+  });
+
+  describe('#_countWonCardPointsByTeam', function() {
+    it ('should count points correctly', function() {
+      let game = mockGame();
+      game._cardsWonByTeam[0] = [new Card('J', '♠'), new Card('7', '♠'), new Card('2', '♥'), new Card('6', '♠')];
+      game._cardsWonByTeam[1] = [new Card('A', '♥'), new Card('5', '♣'), new Card('7', '♣'), new Card('4', '♥')];
+      game._countWonCardPointsByTeam();
+      assert.equal(game.pointsWonByTeam[0], 13);
+      assert.equal(game.pointsWonByTeam[1], 21);
+    });
+  });
+
+  describe('#_countWonGamePointsByTeam', function() {
+    let game = null;
+
+    beforeEach(function() {
+      game = mockGame();
     });
 
-    it('first played card of the trick should be the suit of the trick', function() {
-      game.playCard(0, new Card('2', '♠'));
-      assert.equal(game.trick.suit, '♠');
+    it('team 0 should win if it has more points', function() { 
+      game.pointsWonByTeam[0] = 61;
+      game.pointsWonByTeam[1] = 59;
+      game._countWonGamePointsByTeam();
+      assert.equal(game.teamThatWon, 0);
     });
 
-    it('players should play a card of the trick suit', function() {
-      expect(function() {
-        game.playCard(1, new Card('2', '♣'));
-      }).to.throw('Player must play a card of suit: ♠'); 
+    it('team 1 should win if it has more points', function() { 
+      game.pointsWonByTeam[0] = 59;
+      game.pointsWonByTeam[1] = 61;
+      game._countWonGamePointsByTeam();
+      assert.equal(game.teamThatWon, 1);
+    });
+    
+    it('should draw if teams has the same ammount of points', function() { 
+      game.pointsWonByTeam[0] = 60;
+      game.pointsWonByTeam[1] = 60;
+      game._countWonGamePointsByTeam();
+      assert.isTrue(game.wasDraw);
     });
 
-    it('player should have the played card on his hand', function() {
-      expect(function() {
-        game.playCard(1, new Card('A', '♠'));
-      }).to.throw(/^Player .* doesnt have card .*$/);
+    it('should win 4 set points if a team wins with 120 game points', function() { 
+      game.pointsWonByTeam[0] = 120;
+      game.pointsWonByTeam[1] = 0;
+      game._countWonGamePointsByTeam();
+      assert.equal(game.wonGameSetPoints, 4);
     });
 
-    it('played card should be added to the trick', function() {
-      assert.deepEqual(game.trick.cards[0], new Card('2', '♠'));
+    it('should win 2 set points if a team wins with more than 90 game points', function() { 
+      game.pointsWonByTeam[0] = 91;
+      game.pointsWonByTeam[1] = 0;
+      game._countWonGamePointsByTeam();
+      assert.equal(game.wonGameSetPoints, 2);
     });
 
-    it('owner of the played card should be added to the trick', function() {
-      assert.deepEqual(game.trick.players[0], game.players[0]);
-    });
-
-    it('winning payer shoud receive the trick points', function() {
-      game.playCard(1, new Card('3', '♠'));
-      game.playCard(2, new Card('A', '♠'));
-      game.playCard(3, new Card('7', '♠'));
-      
-      assert.lengthOf(game.packOfCards[0], 4);
-    });
-
-    it('the team that won most points should win the game', function() {
-      game = new Game();
-      game.addPlayer('John');
-      game.addPlayer('Felipe');
-      game.addPlayer('Sara');
-      game.addPlayer('Raphael');
-      game.start();
-      mock(game); //TODO: Find a lib to mock easily.
-
-      //team 0 won 0 points
-      game.playCard(0, new Card('2', '♠'));
-      game.playCard(1, new Card('3', '♠'));
-      game.playCard(2, new Card('5', '♠'));
-      game.playCard(3, new Card('4', '♠'));
-
-      //team 0 won 13 points
-      game.playCard(2, new Card('J', '♠'));
-      game.playCard(3, new Card('7', '♠'));
-      game.playCard(0, new Card('2', '♥'));
-      game.playCard(1, new Card('6', '♠'));
-
-      //team 1 won 12 points
-      game.playCard(0, new Card('Q', '♥'));
-      game.playCard(1, new Card('7', '♥'));
-      game.playCard(2, new Card('3', '♥'));
-      game.playCard(3, new Card('5', '♥'));
-      
-      //team 0 won 13 points
-      game.playCard(1, new Card('Q', '♠'));
-      game.playCard(2, new Card('K', '♠'));
-      game.playCard(3, new Card('J', '♥'));
-      game.playCard(0, new Card('K', '♥'));
-      
-      //team 1 won 3 points
-      game.playCard(0, new Card('4', '♣'));
-      game.playCard(1, new Card('2', '♣'));
-      game.playCard(2, new Card('3', '♣'));
-      game.playCard(3, new Card('J', '♣'));
-      
-      //team 1 won 21 points
-      game.playCard(3, new Card('A', '♥'));
-      game.playCard(0, new Card('5', '♣'));
-      game.playCard(1, new Card('7', '♣'));
-      game.playCard(2, new Card('4', '♥'));
-      
-      //team 1 won 15 points
-      game.playCard(3, new Card('K', '♣'));
-      game.playCard(0, new Card('6', '♣'));
-      game.playCard(1, new Card('4', '♦'));
-      game.playCard(2, new Card('A', '♠'));
-      
-      //team 1 won 3 points
-      game.playCard(3, new Card('J', '♦'));
-      game.playCard(0, new Card('2', '♦'));
-      game.playCard(1, new Card('5', '♦'));
-      game.playCard(2, new Card('3', '♦'));
-      
-      //team 1 won 8 points
-      game.playCard(3, new Card('K', '♦'));
-      game.playCard(0, new Card('Q', '♣'));
-      game.playCard(1, new Card('6', '♦'));
-      game.playCard(2, new Card('Q', '♦'));
-      
-      //team 0 won 32 points
-      game.playCard(3, new Card('A', '♦'));
-      game.playCard(0, new Card('A', '♣'));
-      game.playCard(1, new Card('7', '♦'));
-      let result = game.playCard(2, new Card('6', '♥'));
-
-      assert.equal(result[0], 58);
-      assert.equal(result[1], 62);
+    it('should win 1 set point if a team wins with less than 90 game points', function() { 
+      game.pointsWonByTeam[0] = 61;
+      game.pointsWonByTeam[1] = 59;
+      game._countWonGamePointsByTeam();
+      assert.equal(game.wonGameSetPoints, 1);
     });
 
   });
 
 });
 
-function mock(game) {
+//TODO: Is there a lib that fits this well?
+//TODO: Extract to another file to reuse on GameSet.js test
+function mockGame() {
+
+  let players = [];
+  players.push(new Player(0, 'Marcio', 0));
+  players.push(new Player(1, 'Gabriel', 1));
+  players.push(new Player(2, 'Gomes', 0));
+  players.push(new Player(3, 'Silva', 1));
+
+  game = new Game(players, 0);
+  game.start();
+
   let cards = null;
 
   cards = [
-    new Card('2', '♠'),//
-    new Card('2', '♥'),//
-    new Card('Q', '♥'),//
-    new Card('K', '♥'),//
-    new Card('4', '♣'),//
-    new Card('5', '♣'),//
-    new Card('6', '♣'),//
-    new Card('Q', '♣'),//
-    new Card('A', '♣'),//
-    new Card('2', '♦') ]; //
+    new Card('2', '♠'),
+    new Card('2', '♥'),
+    new Card('Q', '♥'),
+    new Card('K', '♥'),
+    new Card('4', '♣'),
+    new Card('5', '♣'),
+    new Card('6', '♣'),
+    new Card('Q', '♣'),
+    new Card('A', '♣'),
+    new Card('2', '♦') ];
 
   game.players[0].hand = new Hand(cards);
 
   cards = [
-    new Card('3', '♠'),//
-    new Card('6', '♠'),//
-    new Card('Q', '♠'),//
-    new Card('7', '♥'),//
-    new Card('2', '♣'),//
-    new Card('7', '♣'),//
-    new Card('4', '♦'),//
-    new Card('5', '♦'),//
-    new Card('6', '♦'),//
-    new Card('7', '♦') ]; //
+    new Card('3', '♠'),
+    new Card('6', '♠'),
+    new Card('Q', '♠'),
+    new Card('7', '♥'),
+    new Card('2', '♣'),
+    new Card('7', '♣'),
+    new Card('4', '♦'),
+    new Card('5', '♦'),
+    new Card('6', '♦'),
+    new Card('7', '♦') ];
 
   game.players[1].hand = new Hand(cards);
 
   cards = [
-    new Card('5', '♠'),//
-    new Card('J', '♠'),//
-    new Card('K', '♠'),//
-    new Card('A', '♠'),//
-    new Card('3', '♥'),//
-    new Card('4', '♥'),//
-    new Card('6', '♥'),//
-    new Card('3', '♣'),//
-    new Card('3', '♦'),//
-    new Card('Q', '♦') ];//
+    new Card('5', '♠'),
+    new Card('J', '♠'),
+    new Card('K', '♠'),
+    new Card('A', '♠'),
+    new Card('3', '♥'),
+    new Card('4', '♥'),
+    new Card('6', '♥'),
+    new Card('3', '♣'),
+    new Card('3', '♦'),
+    new Card('Q', '♦') ];
 
   game.players[2].hand = new Hand(cards);
 
   cards = [
-    new Card('4', '♠'),//
-    new Card('7', '♠'),//
-    new Card('5', '♥'),//
-    new Card('J', '♥'),//
+    new Card('4', '♠'),
+    new Card('7', '♠'),
+    new Card('5', '♥'),
+    new Card('J', '♥'),
     new Card('A', '♥'),
-    new Card('J', '♣'),//
-    new Card('K', '♣'),//
-    new Card('J', '♦'),//
-    new Card('K', '♦'),//
-    new Card('A', '♦') ];//
+    new Card('J', '♣'),
+    new Card('K', '♣'),
+    new Card('J', '♦'),
+    new Card('K', '♦'),
+    new Card('A', '♦') ];
 
   game.players[3].hand = new Hand(cards);
-  game.trumpSuit = '♥';
+  game.trumpSuit = new Card('A', '♥');
+
+  return game;
 }

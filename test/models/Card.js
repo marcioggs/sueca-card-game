@@ -5,7 +5,6 @@ describe('Card', function() {
   describe('[constructor]', function() {
 
     it('2-6 cards should have 0 points', function() {
-      
       assert.equal(new Card('2', '♠').point, 0);
       assert.equal(new Card('3', '♠').point, 0);
       assert.equal(new Card('4', '♠').point, 0);
@@ -34,4 +33,58 @@ describe('Card', function() {
     });
     
   });
+
+  describe('#allRanks', function() {
+    it('should return all ranks', function() {
+      const ranks = Card.allRanks();
+
+      assert.include(ranks, '2');
+      assert.include(ranks, '3');
+      assert.include(ranks, '4');
+      assert.include(ranks, '5');
+      assert.include(ranks, '6');
+      assert.include(ranks, 'Q');
+      assert.include(ranks, 'J');
+      assert.include(ranks, 'K');
+      assert.include(ranks, '7');
+      assert.include(ranks, 'A');
+
+      assert.lengthOf(ranks, 10);
+    })
+  });
+
+  describe('#allSuits', function() {
+    it('should return all suits', function() {
+      const suits = Card.allSuits();
+
+      assert.include(suits, '♠');
+      assert.include(suits, '♥');
+      assert.include(suits, '♦');
+      assert.include(suits, '♣');
+
+      assert.lengthOf(suits, 4);
+    })
+  });
+
+  describe('#toString', function() {
+    it('should return the format [rank, suit]', function() {
+      assert.equal(new Card('A', '♠').toString(), '[A, ♠]');
+    });
+  });
+
+  describe('#getRankIndex', function() {
+    it('should return rank index correctly', function() {
+      assert.equal(new Card('2', '♠').getRankIndex(), 0);
+      assert.equal(new Card('3', '♠').getRankIndex(), 1);
+      assert.equal(new Card('4', '♠').getRankIndex(), 2);
+      assert.equal(new Card('5', '♠').getRankIndex(), 3);
+      assert.equal(new Card('6', '♠').getRankIndex(), 4);
+      assert.equal(new Card('Q', '♠').getRankIndex(), 5);
+      assert.equal(new Card('J', '♠').getRankIndex(), 6);
+      assert.equal(new Card('K', '♠').getRankIndex(), 7);
+      assert.equal(new Card('7', '♠').getRankIndex(), 8);
+      assert.equal(new Card('A', '♠').getRankIndex(), 9);
+    });
+  });
+
 });
