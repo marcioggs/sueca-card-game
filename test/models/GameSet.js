@@ -67,7 +67,7 @@ describe('GameSet', function() {
         });
     });
 
-    describe('#_setPoints', function() {
+    describe('#_calculatePoints', function() {
 
         let gameSet = null;
         beforeEach(function() {
@@ -76,30 +76,30 @@ describe('GameSet', function() {
 
         it('should accumulate points for the next game if the last one was draw', function() {
             gameSet.game = {
-                wasDraw: true,
+                tied: true,
                 teamThatWon: null,
-                wonGameSetPoints: 1
+                earnedGameSetPoints: 1
             };
-            gameSet._setPoints();
+            gameSet._calculatePoints();
             assert.equal(gameSet.points[0], 0);
             assert.equal(gameSet.points[1], 0);
 
             gameSet.game = {
-                wasDraw: false,
+                tied: false,
                 teamThatWon: 1,
-                wonGameSetPoints: 1
+                earnedGameSetPoints: 1
             };
-            gameSet._setPoints();
+            gameSet._calculatePoints();
             assert.equal(gameSet.points[1], 2);
         });
 
         it('should score points to the team that won', function() {
             gameSet.game = {
-                wasDraw: false,
+                tied: false,
                 teamThatWon: 0,
-                wonGameSetPoints: 2
+                earnedGameSetPoints: 2
             };
-            gameSet._setPoints();
+            gameSet._calculatePoints();
             assert.equal(gameSet.points[0], 2);
         });
     });

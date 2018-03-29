@@ -7,8 +7,8 @@ class GameSet {
         this.players = [];
         this.game = null;
         this.points = [0, 0];
-        this._acumulatedDrawPoints = 0;
-        this.playerIdToShuffleCards = 0;
+        this._accumulatedPoints = 0;
+        this.startingPlayerId = 0;
     }
 
     addPlayer(playerName) {
@@ -22,13 +22,13 @@ class GameSet {
     }
 
     startGame() {
-        if(this._gameSetHasEnded()) {
+        if(this._isGameSetOver()) {
             return null;
         }
         if (this.game != null) {
             throw new Error('There is already a game in progress.');
         }
-        this.game = new Game(this.players, this.playerIdToShuffleCards);
+        this.game = new Game(this.players, this.startingPlayerId);
         this.game.start();
         return this.game;
     }
@@ -38,27 +38,27 @@ class GameSet {
             throw new Error('There is no game in progress.');
         }
         this.game.finish();
-        this._setPoints();
-        this.playerIdToShuffleCards = (this.playerIdToShuffleCards + 1) % 4;
+        this._calculatePoints();
+        this.startingPlayerId = (this.startingPlayerId + 1) % 4;
         this.game = null;
     }
 
-    _setPoints() {
-        if (this.game.wasDraw) {
-            this._acumulatedDrawPoints++;
+    _calculatePoints() {
+        if (this.game.tied) {
+            this._accumulatedPoints++;
         } else {
-            this.points[this.game.teamThatWon] += this.game.wonGameSetPoints + this._acumulatedDrawPoints;
-            this._acumulatedDrawPoints = 0;
+            this.points[this.game.teamThatWon] += this.game.earnedGameSetPoints + this._accumulatedPoints;
+            this._accumulatedPoints = 0;
         }
     }
 
     finish() {
-        if (!this._gameSetHasEnded()) {
+        if (!this._isGameSetOver()) {
             throw new Error('There are no teams with 4 points.');
         }
     }
 
-    _gameSetHasEnded() {
+    _isGameSetOver() {
         return this.points[0] >= 4 || this.points[1] >= 4;
     }
       
