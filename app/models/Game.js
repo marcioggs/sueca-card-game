@@ -23,7 +23,6 @@ class Game {
         this.tied = false;
         this.earnedGameSetPoints = null;
         this.teamThatWon = null;
-        this._playerIdThatWonLastTrick = null;
     }
 
     start() {
@@ -32,7 +31,6 @@ class Game {
         this._distributeCards();
         let endingPlayerId = (this.startingPlayerId + 3) % 4;
         this.trumpCard = this.players[endingPlayerId].hand.getLastCard();
-        this.currentPlayerTurn = this.startingPlayerId;
     }
 
     _distributeCards() {
@@ -48,8 +46,7 @@ class Game {
         if (this.trick != null) {
             throw new Error('There is already a trick in progress.');
         }
-        let firstPlayerOnTrick = this._playerIdThatWonLastTrick === null? this.startingPlayerId : this._playerIdThatWonLastTrick;
-        this.trick = new Trick(this.players, this.trumpCard.suit, firstPlayerOnTrick);
+        this.trick = new Trick(this.players, this.trumpCard.suit, this.startingPlayerId);
         return this.trick;
     }
 
@@ -63,7 +60,7 @@ class Game {
         }
         this.trick.finish();
         this._cardsWonByTeam[this.trick.playerThatWon.team] = this._cardsWonByTeam[this.trick.playerThatWon.team].concat(this.trick.cardsPlayed);
-        this._playerIdThatWonLastTrick = this.trick.playerThatWon.id;
+        this.startingPlayerId = this.trick.playerThatWon.id;
         this.trick = null;
     }
 
@@ -71,11 +68,11 @@ class Game {
         if (!this._isGameOver()) {
             throw new Error('There arent 40 cards on the deck.');
         }
-        this._countWonCardPointsByTeam();
-        this._countWonGamePointsByTeam();
+        this._calculateEarnedPoints();
+        this._calculateEarnedGameSetPoints();
     }
 
-    _countWonCardPointsByTeam() {
+    _calculateEarnedPoints() {
         for (let i = 0; i < this._cardsWonByTeam.length; i++) {
             for (let j = 0; j < this._cardsWonByTeam[i].length; j++) {
                 this.earnedPointsByTeam[i] += this._cardsWonByTeam[i][j].point;
@@ -83,8 +80,8 @@ class Game {
         }
     }
 
-    _countWonGamePointsByTeam() {
-        let pointsWonByWinningTeam = null;
+    _calculateEarnedGameSetPoints() {
+        let earnedPoints = null;
         if (this.earnedPointsByTeam[0] === this.earnedPointsByTeam[1]) {
             this.tied = true;
             this.gamePoints = 0;
@@ -93,11 +90,11 @@ class Game {
         } else {
             this.teamThatWon = 1;
         }
-        pointsWonByWinningTeam = this.earnedPointsByTeam[this.teamThatWon];
+        earnedPoints = this.earnedPointsByTeam[this.teamThatWon];
 
-        if (pointsWonByWinningTeam === 120) {
+        if (earnedPoints === 120) {
             this.earnedGameSetPoints = 4;
-        } else if (pointsWonByWinningTeam > 90) {
+        } else if (earnedPoints > 90) {
             this.earnedGameSetPoints = 2;
         } else {
             this.earnedGameSetPoints = 1;

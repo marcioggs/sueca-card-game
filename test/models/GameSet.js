@@ -116,7 +116,7 @@ describe('GameSet', function() {
         while (game = gameSet.startGame()) {
             mockGame(game);
             let i = 0;
-            const cards = cardsToBePlayed(game.currentPlayerTurn);
+            const cards = cardsToBePlayed(game.startingPlayerId);
 
             let trick = null;
             while(trick = game.startTrick()) {
@@ -135,13 +135,13 @@ describe('GameSet', function() {
     });
 });
 
-function cardsToBePlayed(currentPlayerTurn) {
+function cardsToBePlayed(startingPlayerId) {
     let a = [];
 
-    const p0 = currentPlayerTurn;
-    const p1 = (currentPlayerTurn + 1) % 4;
-    const p2 = (currentPlayerTurn + 2) % 4;
-    const p3 = (currentPlayerTurn + 3) % 4;
+    const p0 = startingPlayerId;
+    const p1 = (startingPlayerId + 1) % 4;
+    const p2 = (startingPlayerId + 2) % 4;
+    const p3 = (startingPlayerId + 3) % 4;
 
     a.push({id: p0, card: new Card('2', '♠')});
     a.push({id: p1, card: new Card('3', '♠')});
@@ -189,7 +189,7 @@ function cardsToBePlayed(currentPlayerTurn) {
 
 function mockGame(game) {
     let cards = null;
-    const startingPlayer = game.currentPlayerTurn;
+    const startingPlayer = game.startingPlayerId;
   
     cards = [
       new Card('2', '♠'),

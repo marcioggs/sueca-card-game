@@ -82,7 +82,7 @@ describe('Game', function() {
     });
 
     it('first player of the others trick should be the won last trick', function() {
-      game._playerIdThatWonLastTrick = 3;
+      game.startingPlayerId = 3;
       assert.equal(game.startTrick().currentPlayerIdTurn, 3);
     });
   });
@@ -96,18 +96,18 @@ describe('Game', function() {
     });
   });
 
-  describe('#_countWonCardPointsByTeam', function() {
+  describe('#_calculateEarnedPoints', function() {
     it ('should count points correctly', function() {
       let game = mockGame();
       game._cardsWonByTeam[0] = [new Card('J', '♠'), new Card('7', '♠'), new Card('2', '♥'), new Card('6', '♠')];
       game._cardsWonByTeam[1] = [new Card('A', '♥'), new Card('5', '♣'), new Card('7', '♣'), new Card('4', '♥')];
-      game._countWonCardPointsByTeam();
+      game._calculateEarnedPoints();
       assert.equal(game.earnedPointsByTeam[0], 13);
       assert.equal(game.earnedPointsByTeam[1], 21);
     });
   });
 
-  describe('#_countWonGamePointsByTeam', function() {
+  describe('#_calculateEarnedGameSetPoints', function() {
     let game = null;
 
     beforeEach(function() {
@@ -117,42 +117,42 @@ describe('Game', function() {
     it('team 0 should win if it has more points', function() { 
       game.earnedPointsByTeam[0] = 61;
       game.earnedPointsByTeam[1] = 59;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.equal(game.teamThatWon, 0);
     });
 
     it('team 1 should win if it has more points', function() { 
       game.earnedPointsByTeam[0] = 59;
       game.earnedPointsByTeam[1] = 61;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.equal(game.teamThatWon, 1);
     });
     
     it('should draw if teams has the same ammount of points', function() { 
       game.earnedPointsByTeam[0] = 60;
       game.earnedPointsByTeam[1] = 60;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.isTrue(game.tied);
     });
 
     it('should win 4 set points if a team wins with 120 game points', function() { 
       game.earnedPointsByTeam[0] = 120;
       game.earnedPointsByTeam[1] = 0;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.equal(game.earnedGameSetPoints, 4);
     });
 
     it('should win 2 set points if a team wins with more than 90 game points', function() { 
       game.earnedPointsByTeam[0] = 91;
       game.earnedPointsByTeam[1] = 0;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.equal(game.earnedGameSetPoints, 2);
     });
 
     it('should win 1 set point if a team wins with less than 90 game points', function() { 
       game.earnedPointsByTeam[0] = 61;
       game.earnedPointsByTeam[1] = 59;
-      game._countWonGamePointsByTeam();
+      game._calculateEarnedGameSetPoints();
       assert.equal(game.earnedGameSetPoints, 1);
     });
 
