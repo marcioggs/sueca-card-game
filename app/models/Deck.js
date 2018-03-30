@@ -1,6 +1,6 @@
 let Card = require('./Card.js');
 let Hand = require('./Hand.js');
-let Utils = require('./Utils.js');
+let _ = require('lodash');
 
 class Deck {
 
@@ -10,20 +10,18 @@ class Deck {
 
     _createCards() {
         let cards = [];
-        let ranks = Card.allRanks();
-        let suits = Card.allSuits();
 
-        for (let i = 0; i < ranks.length; i++) {
-            for (let j = 0; j < suits.length; j++) {
-                cards.push(new Card(ranks[i], suits[j]));
-            }
-        }
+        Card.allRanks().forEach(rank => {
+            Card.allSuits().forEach(suit => {
+                cards.push(new Card(rank, suit));
+            });
+        });
 
         return cards;
     }
 
     shuffleCards() {
-        Utils.shuffle(this.cards);
+        this.cards = _.shuffle(this.cards);
     }
 
     getHand() {

@@ -36,7 +36,7 @@ describe('Player', function() {
     });
 
     it('should return null if there isnt a player with the id informed in the players list', function() {
-      assert.isNull(Player.getPlayer(players, 4));
+      assert.isUndefined(Player.getPlayer(players, 4));
     });
   });
 

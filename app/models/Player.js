@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 class Player {
     constructor(id, name, team) {
         this.id = id;
@@ -7,11 +9,7 @@ class Player {
     }
 
     static getPlayer(players, id) {
-        let player = null;
-        let i = this.getPlayerIndex(players, id);
-        if (i > -1) {
-            player = players[i]
-        }
+        let player = _.find(players, player => player.id === id);
         return player;
     }
 

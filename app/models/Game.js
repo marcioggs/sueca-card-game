@@ -9,7 +9,7 @@ class Game {
         if (players.length != 4) {
             throw new Error('There must be 4 players in the room.');
         }
-        if (Player.getPlayerIndex(players, startingPlayerId) < 0) {
+        if (Player.getPlayerIndex(players, startingPlayerId) === undefined) {
             throw new Error(Util.format('Player with index %s doesnt exists on players list', startingPlayerId));
         }
 

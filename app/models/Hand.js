@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 class Hand {
 
     constructor(cards) {
@@ -17,15 +19,9 @@ class Hand {
     }
 
     hasCardOfSuit(suit) {
-        let found = false;
 
-        for (let i = 0; i < this.cards.length && !found; i++) {
-            if (this.cards[i].suit === suit) {
-                found = true;
-            }
-        }
-
-        return found;
+        const i = _.findIndex(this.cards, card => card.suit === suit);
+        return i >= 0;
     }
 };
 

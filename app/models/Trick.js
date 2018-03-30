@@ -28,7 +28,7 @@ class Trick {
 
         let player = Player.getPlayer(this._players, playerId);
 
-        if (player === null) {
+        if (player === undefined) {
             throw new Error(Util.format('Player with id %s doesnt exists', playerId));
         }
 
