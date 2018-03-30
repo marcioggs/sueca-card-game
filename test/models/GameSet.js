@@ -72,33 +72,32 @@ describe('GameSet', function() {
         let gameSet = null;
         beforeEach(function() {
             gameSet = new GameSet();
+
+            gameSet.addPlayer('Marcio');
+            gameSet.addPlayer('Gabriel');
+            gameSet.addPlayer('Gomes');
+            gameSet.addPlayer('Silva');
+    
+            let game = gameSet.startGame();
+            mockGame(game);
         });
 
         it('should accumulate points for the next game if the last one was draw', function() {
-            gameSet.game = {
-                tied: true,
-                teamThatWon: null,
-                earnedGameSetPoints: 1
-            };
+            gameSet.game.teamThatWon = null;
+            gameSet.game.earnedGameSetPoints = null;
             gameSet._calculatePoints();
             assert.equal(gameSet.points[0], 0);
             assert.equal(gameSet.points[1], 0);
 
-            gameSet.game = {
-                tied: false,
-                teamThatWon: 1,
-                earnedGameSetPoints: 1
-            };
+            gameSet.game.teamThatWon = 1;
+            gameSet.game.earnedGameSetPoints = 1;
             gameSet._calculatePoints();
             assert.equal(gameSet.points[1], 2);
         });
 
         it('should score points to the team that won', function() {
-            gameSet.game = {
-                tied: false,
-                teamThatWon: 0,
-                earnedGameSetPoints: 2
-            };
+            gameSet.game.teamThatWon = 0;
+            gameSet.game.earnedGameSetPoints = 2;
             gameSet._calculatePoints();
             assert.equal(gameSet.points[0], 2);
         });
@@ -203,7 +202,7 @@ function mockGame(game) {
       new Card('A', '♣'),
       new Card('2', '♦') ];
   
-    game.players[startingPlayer].hand = new Hand(cards);
+    game._players[startingPlayer].hand = new Hand(cards);
   
     cards = [
       new Card('3', '♠'),
@@ -217,7 +216,7 @@ function mockGame(game) {
       new Card('6', '♦'),
       new Card('7', '♦') ];
   
-    game.players[(startingPlayer + 1) % 4].hand = new Hand(cards);
+    game._players[(startingPlayer + 1) % 4].hand = new Hand(cards);
   
     cards = [
       new Card('5', '♠'),
@@ -231,7 +230,7 @@ function mockGame(game) {
       new Card('3', '♦'),
       new Card('Q', '♦') ];
   
-    game.players[(startingPlayer + 2) % 4].hand = new Hand(cards);
+    game._players[(startingPlayer + 2) % 4].hand = new Hand(cards);
   
     cards = [
       new Card('4', '♠'),
@@ -245,7 +244,7 @@ function mockGame(game) {
       new Card('K', '♦'),
       new Card('A', '♦') ];
   
-    game.players[(startingPlayer + 3) % 4].hand = new Hand(cards);
+    game._players[(startingPlayer + 3) % 4].hand = new Hand(cards);
     game.trumpCard = new Card('A', '♥');
   
     return game;

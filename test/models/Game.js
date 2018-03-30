@@ -29,10 +29,6 @@ describe('Game', function() {
     });
   });
 
-  //TODO: Remove
-  /*       delete game.players.splice(4, 1);
-        let trumpCard = game.start(); */
-
   describe('#start', function() {
 
     let game = null;
@@ -49,14 +45,14 @@ describe('Game', function() {
     });
     
     it('each player should have 10 cards', function() {
-      assert.lengthOf(game.players[0].hand.cards, 10);
-      assert.lengthOf(game.players[1].hand.cards, 10);
-      assert.lengthOf(game.players[2].hand.cards, 10);
-      assert.lengthOf(game.players[3].hand.cards, 10);
+      assert.lengthOf(game._players[0].hand.cards, 10);
+      assert.lengthOf(game._players[1].hand.cards, 10);
+      assert.lengthOf(game._players[2].hand.cards, 10);
+      assert.lengthOf(game._players[3].hand.cards, 10);
     });
 
     it('trump card must be the last of the deck', function() {
-      assert.deepEqual(game.players[3].hand.cards[9], game.trumpCard);
+      assert.deepEqual(game._players[3].hand.cards[9], game.trumpCard);
     });
   });
 
@@ -96,18 +92,18 @@ describe('Game', function() {
     });
   });
 
-  describe('#_calculateEarnedPoints', function() {
+  describe('#_calculateEarnedPointsByTeam', function() {
     it ('should count points correctly', function() {
       let game = mockGame();
       game._cardsWonByTeam[0] = [new Card('J', '♠'), new Card('7', '♠'), new Card('2', '♥'), new Card('6', '♠')];
       game._cardsWonByTeam[1] = [new Card('A', '♥'), new Card('5', '♣'), new Card('7', '♣'), new Card('4', '♥')];
-      game._calculateEarnedPoints();
+      game._calculateEarnedPointsByTeam();
       assert.equal(game.earnedPointsByTeam[0], 13);
       assert.equal(game.earnedPointsByTeam[1], 21);
     });
   });
 
-  describe('#_calculateEarnedGameSetPoints', function() {
+  describe('#_findOutTeamThatWon', function() {
     let game = null;
 
     beforeEach(function() {
@@ -117,39 +113,51 @@ describe('Game', function() {
     it('team 0 should win if it has more points', function() { 
       game.earnedPointsByTeam[0] = 61;
       game.earnedPointsByTeam[1] = 59;
-      game._calculateEarnedGameSetPoints();
+      game._findOutTeamThatWon();
       assert.equal(game.teamThatWon, 0);
     });
 
     it('team 1 should win if it has more points', function() { 
       game.earnedPointsByTeam[0] = 59;
       game.earnedPointsByTeam[1] = 61;
-      game._calculateEarnedGameSetPoints();
+      game._findOutTeamThatWon();
       assert.equal(game.teamThatWon, 1);
     });
     
-    it('should draw if teams has the same ammount of points', function() { 
+    it('should tie if teams has the same ammount of points', function() { 
       game.earnedPointsByTeam[0] = 60;
       game.earnedPointsByTeam[1] = 60;
-      game._calculateEarnedGameSetPoints();
-      assert.isTrue(game.tied);
+      game._findOutTeamThatWon();
+      assert.isTrue(game.hasTied());
     });
 
-    it('should win 4 set points if a team wins with 120 game points', function() { 
+  });
+
+  describe('#_calculateEarnedGameSetPoints', function() {
+    let game = null;
+
+    beforeEach(function() {
+      game = mockGame();
+    });
+
+    it('should win 4 set points if a team wins with 120 game points', function() {
+      game.teamThatWon = 0;
       game.earnedPointsByTeam[0] = 120;
       game.earnedPointsByTeam[1] = 0;
       game._calculateEarnedGameSetPoints();
       assert.equal(game.earnedGameSetPoints, 4);
     });
 
-    it('should win 2 set points if a team wins with more than 90 game points', function() { 
+    it('should win 2 set points if a team wins with more than 90 game points', function() {
+      game.teamThatWon = 0;
       game.earnedPointsByTeam[0] = 91;
       game.earnedPointsByTeam[1] = 0;
       game._calculateEarnedGameSetPoints();
       assert.equal(game.earnedGameSetPoints, 2);
     });
 
-    it('should win 1 set point if a team wins with less than 90 game points', function() { 
+    it('should win 1 set point if a team wins with less than 90 game points', function() {
+      game.teamThatWon = 0;
       game.earnedPointsByTeam[0] = 61;
       game.earnedPointsByTeam[1] = 59;
       game._calculateEarnedGameSetPoints();
@@ -187,7 +195,7 @@ function mockGame() {
     new Card('A', '♣'),
     new Card('2', '♦') ];
 
-  game.players[0].hand = new Hand(cards);
+  game._players[0].hand = new Hand(cards);
 
   cards = [
     new Card('3', '♠'),
@@ -201,7 +209,7 @@ function mockGame() {
     new Card('6', '♦'),
     new Card('7', '♦') ];
 
-  game.players[1].hand = new Hand(cards);
+  game._players[1].hand = new Hand(cards);
 
   cards = [
     new Card('5', '♠'),
@@ -215,7 +223,7 @@ function mockGame() {
     new Card('3', '♦'),
     new Card('Q', '♦') ];
 
-  game.players[2].hand = new Hand(cards);
+  game._players[2].hand = new Hand(cards);
 
   cards = [
     new Card('4', '♠'),
@@ -229,7 +237,7 @@ function mockGame() {
     new Card('K', '♦'),
     new Card('A', '♦') ];
 
-  game.players[3].hand = new Hand(cards);
+  game._players[3].hand = new Hand(cards);
   game.trumpSuit = new Card('A', '♥');
 
   return game;

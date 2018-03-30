@@ -13,29 +13,28 @@ class Game {
             throw new Error(Util.format('Player with index %s doesnt exists on players list', startingPlayerId));
         }
 
-        this.players = players;
+        this._players = players;
         this.startingPlayerId = startingPlayerId;
-        this.deck = null;
-        this.trick = null;
+        this._deck = null;
+        this._trick = null;
         this._cardsWonByTeam = [[], []];
         this.earnedPointsByTeam = [0, 0];
         this.trumpCard = null;
-        this.tied = false;
         this.earnedGameSetPoints = null;
         this.teamThatWon = null;
     }
 
     start() {
-        this.deck = new Deck();
-        this.deck.shuffleCards();
+        this._deck = new Deck();
+        this._deck.shuffleCards();
         this._distributeCards();
         let endingPlayerId = (this.startingPlayerId + 3) % 4;
-        this.trumpCard = this.players[endingPlayerId].hand.getLastCard();
+        this.trumpCard = this._players[endingPlayerId].hand.getLastCard();
     }
 
     _distributeCards() {
-        for (let i = 0; i < this.players.length; i++) {
-            this.players[(this.startingPlayerId + i) % 4].hand = this.deck.getHand();
+        for (let i = 0; i < this._players.length; i++) {
+            this._players[(this.startingPlayerId + i) % 4].hand = this._deck.getHand();
         }
     }
 
@@ -43,11 +42,11 @@ class Game {
         if(this._isGameOver()) {
             return null;
         }
-        if (this.trick != null) {
+        if (this._trick != null) {
             throw new Error('There is already a trick in progress.');
         }
-        this.trick = new Trick(this.players, this.trumpCard.suit, this.startingPlayerId);
-        return this.trick;
+        this._trick = new Trick(this._players, this.trumpCard.suit, this.startingPlayerId);
+        return this._trick;
     }
 
     _isGameOver() {
@@ -55,24 +54,27 @@ class Game {
     }
 
     finishTrick() {
-        if (this.trick === null) {
+        if (this._trick === null) {
             throw new Error('There is no trick in progress.');
         }
-        this.trick.finish();
-        this._cardsWonByTeam[this.trick.playerThatWon.team] = this._cardsWonByTeam[this.trick.playerThatWon.team].concat(this.trick.cardsPlayed);
-        this.startingPlayerId = this.trick.playerThatWon.id;
-        this.trick = null;
+        this._trick.finish();
+        this._cardsWonByTeam[this._trick.playerThatWon.team] = this._cardsWonByTeam[this._trick.playerThatWon.team].concat(this._trick.cardsPlayed);
+        this.startingPlayerId = this._trick.playerThatWon.id;
+        this._trick = null;
     }
 
     finish() {
         if (!this._isGameOver()) {
             throw new Error('There arent 40 cards on the deck.');
         }
-        this._calculateEarnedPoints();
-        this._calculateEarnedGameSetPoints();
+        this._calculateEarnedPointsByTeam();
+        this._findOutTeamThatWon();
+        if(!this.hasTied()) {
+            this._calculateEarnedGameSetPoints();
+        }
     }
 
-    _calculateEarnedPoints() {
+    _calculateEarnedPointsByTeam() {
         for (let i = 0; i < this._cardsWonByTeam.length; i++) {
             for (let j = 0; j < this._cardsWonByTeam[i].length; j++) {
                 this.earnedPointsByTeam[i] += this._cardsWonByTeam[i][j].point;
@@ -80,17 +82,18 @@ class Game {
         }
     }
 
-    _calculateEarnedGameSetPoints() {
-        let earnedPoints = null;
+    _findOutTeamThatWon() {
         if (this.earnedPointsByTeam[0] === this.earnedPointsByTeam[1]) {
-            this.tied = true;
-            this.gamePoints = 0;
+            this.teamThatWon = null;
         } else if (this.earnedPointsByTeam[0] > this.earnedPointsByTeam[1]) {
             this.teamThatWon = 0;
         } else {
             this.teamThatWon = 1;
         }
-        earnedPoints = this.earnedPointsByTeam[this.teamThatWon];
+    }
+
+    _calculateEarnedGameSetPoints() {
+        let earnedPoints = this.earnedPointsByTeam[this.teamThatWon];
 
         if (earnedPoints === 120) {
             this.earnedGameSetPoints = 4;
@@ -99,6 +102,10 @@ class Game {
         } else {
             this.earnedGameSetPoints = 1;
         }
+    }
+
+    hasTied() {
+        return this.teamThatWon === null;
     }
       
 };

@@ -44,7 +44,7 @@ class GameSet {
     }
 
     _calculatePoints() {
-        if (this.game.tied) {
+        if (this.game.hasTied()) {
             this._accumulatedPoints++;
         } else {
             this.points[this.game.teamThatWon] += this.game.earnedGameSetPoints + this._accumulatedPoints;
