@@ -19,7 +19,6 @@ class Hand {
     }
 
     hasCardOfSuit(suit) {
-
         const i = _.findIndex(this.cards, card => card.suit === suit);
         return i >= 0;
     }
