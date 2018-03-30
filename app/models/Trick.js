@@ -4,12 +4,12 @@ let Util = require('util');
 class Trick {
 
     constructor(players, trumpSuit, firstPlayerId) {
-        this.players = players;
-        this.trumpSuit = trumpSuit;
+        this._players = players;
+        this._trumpSuit = trumpSuit;
         this.cardsPlayed = [];
         this.playersPlayed = [];
-        this.suit = null;
-        this.currentPlayerIdTurn = firstPlayerId;
+        this._suit = null;
+        this._currentPlayerIdTurn = firstPlayerId;
         this.playerThatWon = null;
     }
 
@@ -17,7 +17,7 @@ class Trick {
         if (this._trickHaveEnded()) {
             return null;
         }
-        return this.currentPlayerIdTurn;
+        return this._currentPlayerIdTurn;
     }
 
     _trickHaveEnded() {
@@ -26,21 +26,21 @@ class Trick {
 
     playCard(playerId, card) {
 
-        let player = Player.getPlayer(this.players, playerId);
+        let player = Player.getPlayer(this._players, playerId);
 
         if (player === null) {
             throw new Error(Util.format('Player with id %s doesnt exists', playerId));
         }
 
-        if (Player.getPlayerIndex(this.players, playerId) !== this.currentPlayerIdTurn) {
-            throw new Error(Util.format('Its not players %s turn, its %s', playerId, this.currentPlayerIdTurn));
+        if (Player.getPlayerIndex(this._players, playerId) !== this._currentPlayerIdTurn) {
+            throw new Error(Util.format('Its not players %s turn, its %s', playerId, this._currentPlayerIdTurn));
         }
 
         if (this.cardsPlayed.length === 0) { //First card of the trick chooses the suit.
-            this.suit = card.suit;
-        } else if (card.suit !== this.suit &&
-            player.hand.hasCardOfSuit(this.suit)) {
-            throw new Error(Util.format('Player must play a card of suit: %s', this.suit));
+            this._suit = card.suit;
+        } else if (card.suit !== this._suit &&
+            player.hand.hasCardOfSuit(this._suit)) {
+            throw new Error(Util.format('Player must play a card of suit: %s', this._suit));
         }
 
         if(!player.hand.removeCard(card)) {
@@ -50,7 +50,7 @@ class Trick {
         this.cardsPlayed.push(card);
         this.playersPlayed.push(player);
 
-        this.currentPlayerIdTurn = (this.currentPlayerIdTurn + 1) % 4;
+        this._currentPlayerIdTurn = (this._currentPlayerIdTurn + 1) % 4;
     }
 
     finish() {
@@ -66,7 +66,7 @@ class Trick {
 
             let sameSuit = card.suit === winningCard.suit;
             let winByRank = card.getRankIndex() > winningCard.getRankIndex();
-            let winByTrump = card.suit === this.trumpSuit;
+            let winByTrump = card.suit === this._trumpSuit;
 
             if ((sameSuit && winByRank) || (!sameSuit && winByTrump)) {
                 winningCard = card;

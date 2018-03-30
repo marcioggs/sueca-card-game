@@ -78,7 +78,7 @@ describe('Trick', function() {
     it('should push player and cards to the trick deck', function() {
       trick.playCard(2, new Card('5', '♠'));
       assert.deepInclude(trick.cardsPlayed, new Card('5', '♠'));
-      assert.deepInclude(trick.playersPlayed, trick.players[2]);
+      assert.deepInclude(trick.playersPlayed, trick._players[2]);
     });
 
     it('should change players turn', function() {

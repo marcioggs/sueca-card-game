@@ -73,13 +73,13 @@ describe('Game', function() {
       }).to.throw('There is already a trick in progress.');
     });
 
-    it('first player of the first trick should be the shuffled the cards', function() {
-      assert.equal(game.startTrick().currentPlayerIdTurn, 0);
+    it('first player of the first trick should be the one that shuffled the cards', function() {
+      assert.equal(game.startTrick()._currentPlayerIdTurn, 0);
     });
 
-    it('first player of the others trick should be the won last trick', function() {
+    it('first player of the others trick should be the one that won last trick', function() {
       game.startingPlayerId = 3;
-      assert.equal(game.startTrick().currentPlayerIdTurn, 3);
+      assert.equal(game.startTrick()._currentPlayerIdTurn, 3);
     });
   });
 
