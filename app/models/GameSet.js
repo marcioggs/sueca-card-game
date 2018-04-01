@@ -18,7 +18,7 @@ class GameSet {
         let player = new Player(this.players.length, playerName, this.players.length % 2);
         this.players.push(player);
 
-        return player.id;
+        return player;
     }
 
     startGame() {

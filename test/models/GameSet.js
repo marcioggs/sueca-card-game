@@ -21,8 +21,8 @@ describe('GameSet', function() {
             assert.equal(gameSet.players[0].name, 'Marcio');
         });
 
-        it('should return player id', function() {
-            assert.exists(gameSet.addPlayer('Marcio'));
+        it('should return player with id set', function() {
+            assert.exists(gameSet.addPlayer('Marcio').id);
         });
 
         it('should assign a team to the player', function() {

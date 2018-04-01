@@ -1,15 +1,11 @@
-let express = require('express');
-let app = express();
-let server = require('http').Server(app);
-let Socket = require('./socket.js');
+var app = require('express')();
+var server = require('http').Server(app);
+var GameSetController = require('./web/GameSetController.js');
 
-server.listen(80);
-
-app.use('/web', express.static('web'));
+server.listen(3000);
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/web/index.html');
 });
 
-let s = new Socket(server);
-//sockets.init(server);
+new GameSetController(server);

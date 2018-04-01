@@ -1,8 +1,60 @@
-<script src="/socket.io/socket.io.js"></script>
+ <script src="/socket.io/socket.io.js"></script>
 <script>
-  var socket = io.connect('http://localhost');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
+  var socket = io.connect();
+  var player = null;
+  var hand = null;
+  var trumpCard = null;
+  var players = [];
+  var points = [0, 0];
+
+  socket.emit('setName', 'Marcio');
+
+  socket.on('nameSet', function(p) {
+    console.log('nameSet', p);
+    player = p;
   });
+
+  socket.on('playerListChanged', function(ps) {
+    console.log('playerListChanged', ps);
+    players = ps;
+  });
+
+  socket.on('gameStarted', function(data) {
+    console.log('gameStarted');
+      //TODO: Show who is the ownder of the trump card.
+    hand = data.hand;
+    trumpCard = data.trumpCard;
+  })
+
+  socket.on('trickStarted', function() {
+    console.log('trickStarted');
+  })
+  
+  socket.on('playCard', function() {
+    console.log('playCard');
+    socket.emit('playCard', hand[0]);
+  });
+  
+  socket.on('playerTurn', function(playerId) {
+    console.log('playerTurn', playerId);
+  });
+  
+  socket.on('cardPlayed', function() {
+    console.log('cardPlayed');
+  });
+
+  socket.on('trickFinished', function(playerThatWon) {
+    console.log('trickFinished', playerThatWon);
+    //TODO: Need card that won?
+  });
+
+  socket.on('gameFinished', function(points) {
+    console.log('gameFinished');
+    points = data.points;
+  });
+  
+  socket.on('gameSetFinished', function() {
+    console.log('gameSetFinished');
+  });
+
 </script>

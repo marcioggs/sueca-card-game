@@ -4,6 +4,7 @@
   "description": "Sueca Game",
   "main": "index.js",
   "scripts": {
+    "start": "node app/index.js",
     "test": "mocha --recursive"
   },
   "keywords": [
@@ -14,9 +15,9 @@
   "author": "Márcio Gabriel",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "lodash": "^4.17.5",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
