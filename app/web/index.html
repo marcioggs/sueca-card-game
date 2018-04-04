@@ -1,4 +1,4 @@
- <script src="/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
   var socket = io.connect();
   var player = null;
@@ -7,7 +7,8 @@
   var players = [];
   var points = [0, 0];
 
-  socket.emit('setName', 'Marcio');
+  //TODO: Test on browser console
+  //socket.emit('setName', 'Marcio');
 
   socket.on('nameSet', function(p) {
     console.log('nameSet', p);
@@ -21,7 +22,7 @@
 
   socket.on('gameStarted', function(data) {
     console.log('gameStarted');
-      //TODO: Show who is the ownder of the trump card.
+      //TODO: Show who is the owner of the trump card.
     hand = data.hand;
     trumpCard = data.trumpCard;
   })
@@ -32,15 +33,16 @@
   
   socket.on('playCard', function() {
     console.log('playCard');
-    socket.emit('playCard', hand[0]);
+    //TODO: Test on browser console
+    //socket.emit('playCard', hand[0]);
   });
   
   socket.on('playerTurn', function(playerId) {
     console.log('playerTurn', playerId);
   });
   
-  socket.on('cardPlayed', function() {
-    console.log('cardPlayed');
+  socket.on('cardPlayed', function(card) {
+    console.log('cardPlayed: ', card.toString());
   });
 
   socket.on('trickFinished', function(playerThatWon) {
@@ -49,12 +51,16 @@
   });
 
   socket.on('gameFinished', function(points) {
-    console.log('gameFinished');
+    console.log('gameFinished: ', points);
     points = data.points;
   });
   
   socket.on('gameSetFinished', function() {
     console.log('gameSetFinished');
+  });
+
+  socket.on('gameSetFinishedWithError', function(msg) {
+    console.log('gameSetFinishedWithError: ', msg);
   });
 
 </script>

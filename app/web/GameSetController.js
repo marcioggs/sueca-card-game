@@ -1,5 +1,5 @@
 const socketIo = require('socket.io');
-const GameSet = require('./models/GameSet.js');
+const GameSet = require('../models/GameSet.js');
 const _ = require('lodash');
 
 class GameSetController {
@@ -8,33 +8,31 @@ class GameSetController {
     this.gameSet = new GameSet();
     this.game = null;
     this.trick = null;
-    this.playersIds = [];
+    this.playersSockets = [];
 
-    io.on('connection', this.bindEvents);
+    this.io.on('connection', this.bindEvents);
   }
 
   //TODO: Handle errors thrown over the model.
 
   bindEvents(socket) {
     socket.on('setName', function(name) {
-      //TODO: Is there a better way to get the socket reference?
-      this.setName(name, socket);
+      this.setName(socket, name);
     });
     socket.on('playCard', function(card) {
-      this.playCard(card, socket);
+      this.playCard(socket, card);
     });
     socket.on('disconnect', function() {
-      //TODO: Handle disconnection.
-      console.log('Someone disconnected.');
+      this.io.emit('gameSetFinishedWithError', 'Someone disconnected');
     });
   }
 
-  setName(name, socket) {
+  setName(socket, name) {
     let player = this.gameSet.addPlayer(name);
-    socket.emit('nameSet', player.name);
-    this.playersIds.push({
+    socket.emit('nameSet', player);
+    this.playersSockets.push({
       id: player.id,
-      socketId: socket.id
+      socket: socket
     });
     this.io.emit('playerListChanged', this.gameSet.players);
     
@@ -45,24 +43,26 @@ class GameSetController {
   
   startGame() {
     this.game = this.gameSet.startGame();
-    sendCardsToPlayers(this.game.trumpCard);
-
     if (this.game !== null) {
+      this.sendCardsToPlayers();
       this.startTrick();
     } else {
       this.finishGameSet();
     }
   }
 
-  sendCardsToPlayers(trumpCard) {
-    //TODO: Find if is better to use from game or gameSet and remove _ if needed.
-    this.game._players.forEach(player => {
-      let socketId = _.find(this.playersIds, p => p.id === player.id).socketId;
-      this.io.to(socketId).emit('gameStarted', {
+  sendCardsToPlayers() {
+    this.gameSet.players.forEach(player => {
+      let socket = this.getSocket(player.id);
+      this.io.to(socket.id).emit('gameStarted', {
         hand: player.hand,
-        trumpCard: trumpCard
+        trumpCard: this.game.trumpCard
       });
     });
+  }
+
+  getSocket(playerId) {
+    return _.find(this.playersSockets, playerIds => playerIds.id === player.id).socket;
   }
   
   startTrick() {
@@ -80,22 +80,24 @@ class GameSetController {
   askNextPlayerToPlay() { 
     let playerId = this.trick.getNextPlayer();
     if (playerId !== null) {
-      //TODO: Send just to the players socket?
-      io.emit('playCard', playerId);
-      //TODO: Inform everyone who is playing.
-      io.emit('playerTurn');
+      let socket = this.getSocket(playerId);
+      this.io.to(socket.id).emit('playCard');
+      this.socket.broadcast.emit('playerTurn', playerId);
     } else {
       this.finishTrick();
       this.startTrick()
     }
   }
 
-  playCard(card, socket) {
-    let player = _.find(this.playersIds, player => player.socketId === socket.id);
+  playCard(socket, card) {
+    let player = this.getPlayer(socket.id);
     this.trick.playCard(player.id, card);
-    //TODO: Inform the played card.
-    this.io.emit('cardPlayed');
+    this.io.emit('cardPlayed', card);
     this.askNextPlayerToPlay();
+  }
+
+  getPlayer(socketId) {
+    return _.find(this.playersSockets, player => player.socket.Id === socketId);
   }
 
   finishTrick() {
@@ -105,7 +107,7 @@ class GameSetController {
 
   finishGame() {
     this.gameSet.finishGame();
-    this.io.emit('gameFinished');
+    this.io.emit('gameFinished', this.gameSet.points);
   }
   
   finishGameSet() {
@@ -115,3 +117,5 @@ class GameSetController {
   }
 
 }
+
+module.exports = GameSetController;
