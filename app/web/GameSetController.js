@@ -10,22 +10,38 @@ class GameSetController {
     this.trick = null;
     this.playersSockets = [];
 
-    this.io.on('connection', this.bindEvents);
+    this.bindEvents.bind(this);
+
+    //this.io.on('connection', this.bindEvents);
+    //TODO: How to use the line above and pass the class as THIS?
+    this.io.on('connection', (socket) => {
+      //let self = this;
+      socket.on('setName', (name) => {
+        this.setName(socket, name);
+      });
+      socket.on('playCard', (card) => {
+        this.playCard(socket, card);
+      });
+      socket.on('disconnect', () => {
+        this.io.emit('gameSetFinishedWithError', 'Someone disconnected');
+      });
+    });
   }
 
   //TODO: Handle errors thrown over the model.
-
+/* 
   bindEvents(socket) {
-    socket.on('setName', function(name) {
+    //let self = this;
+    socket.on('setName', (name) => {
       this.setName(socket, name);
     });
-    socket.on('playCard', function(card) {
+    socket.on('playCard', (card) => {
       this.playCard(socket, card);
     });
-    socket.on('disconnect', function() {
+    socket.on('disconnect', () => {
       this.io.emit('gameSetFinishedWithError', 'Someone disconnected');
     });
-  }
+  } */
 
   setName(socket, name) {
     let player = this.gameSet.addPlayer(name);
@@ -62,7 +78,7 @@ class GameSetController {
   }
 
   getSocket(playerId) {
-    return _.find(this.playersSockets, playerIds => playerIds.id === player.id).socket;
+    return _.find(this.playersSockets, playerIds => playerIds.id === playerId).socket;
   }
   
   startTrick() {
@@ -82,7 +98,7 @@ class GameSetController {
     if (playerId !== null) {
       let socket = this.getSocket(playerId);
       this.io.to(socket.id).emit('playCard');
-      this.socket.broadcast.emit('playerTurn', playerId);
+      socket.broadcast.emit('playerTurn', playerId);
     } else {
       this.finishTrick();
       this.startTrick()
