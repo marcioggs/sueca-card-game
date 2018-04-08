@@ -1,4 +1,5 @@
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
 <script>
   var socket = io.connect();
   var player = null;
@@ -22,6 +23,7 @@
 
   socket.on('gameStarted', function(data) {
     console.log('gameStarted');
+    console.log('trumpCard', data.trumpCard);
       //TODO: Show who is the owner of the trump card.
     hand = data.hand;
     trumpCard = data.trumpCard;
@@ -34,7 +36,8 @@
   socket.on('playCard', function() {
     console.log('playCard');
     //TODO: Test on browser console
-    //socket.emit('playCard', hand[0]);
+    //socket.emit('playCard', hand.cards[0]);
+    //_.remove(hand.cards, hand.cards[0]);
   });
   
   socket.on('playerTurn', function(playerId) {
@@ -42,7 +45,8 @@
   });
   
   socket.on('cardPlayed', function(card) {
-    console.log('cardPlayed: ', card.toString());
+    //TODO: toString doesnt work.
+    console.log('cardPlayed: ', card.rank, card.suit);
   });
 
   socket.on('trickFinished', function(playerThatWon) {

@@ -1,5 +1,6 @@
 const socketIo = require('socket.io');
 const GameSet = require('../models/GameSet.js');
+const Card = require('../models/Card.js');
 const _ = require('lodash');
 
 class GameSetController {
@@ -10,7 +11,7 @@ class GameSetController {
     this.trick = null;
     this.playersSockets = [];
 
-    this.bindEvents.bind(this);
+    //this.bindEvents.bind(this);
 
     //this.io.on('connection', this.bindEvents);
     //TODO: How to use the line above and pass the class as THIS?
@@ -107,13 +108,17 @@ class GameSetController {
 
   playCard(socket, card) {
     let player = this.getPlayer(socket.id);
-    this.trick.playCard(player.id, card);
+    this.trick.playCard(player.id, this.getCardObject(card));
     this.io.emit('cardPlayed', card);
     this.askNextPlayerToPlay();
   }
+  
+  getCardObject(card) {
+    return new Card(card.rank, card.suit);
+  }
 
   getPlayer(socketId) {
-    return _.find(this.playersSockets, player => player.socket.Id === socketId);
+    return _.find(this.playersSockets, player => player.socket.id === socketId);
   }
 
   finishTrick() {
