@@ -1,3 +1,4 @@
+//TODO: Change all require variables do cont type.
 let assert = require('chai').assert;
 let Card = require('../../app/models/Card.js'); //TODO: All these ../ are creepy. See ttps://gist.github.com/branneman/8048520
 
