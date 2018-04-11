@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app/index.js",
-    "test": "mocha --recursive"
+    "test": "mocha --recursive --exit"
   },
   "keywords": [
     "sueca",
