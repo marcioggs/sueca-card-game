@@ -9,17 +9,41 @@ describe.only('GameSetController', function() {
 
     let server;
 
-    let player1socket;
-    let player2socket;
-    let player3socket;
-    let player4socket;
+    let players = [
+        {socket: null, name: 'Marcio'},
+        {socket: null, name: 'Gabriel'},
+        {socket: null, name: 'Gomes'},
+        {socket: null, name: 'Silva'},
+    ];
+
+    let disconnectSocket = function(socket) {
+        if (socket !== null) {
+            socket.disconnect(true);
+        };   
+    }
+    
+    let check = function(done, func) {
+        try {
+            func();
+            done();
+        } catch (e) {
+            done(e);
+        }
+    }
+    
+    let initPlayersSockets = function(quantity) {
+        for (let i = 0; i < quantity; i++) {
+            players[i].socket = io(serverAddress);
+        }
+    }
+
+    let setPlayerNames = function(quantity) {
+        for (let i = 0; i < quantity; i++) {
+            players[i].socket.emit('setName', players[i].name);
+        }
+    }
 
     beforeEach(function(done) {
-        player1socket = null;
-        player2socket = null;
-        player3socket = null;
-        player4socket = null;
-        
         //Force reload of module and create a new GameSetController instance.
         delete require.cache[require.resolve('../../app/server.js')];
         server = require('../../app/server.js');
@@ -28,63 +52,101 @@ describe.only('GameSetController', function() {
     });
     
     afterEach(function(done) {
-        disconnectSocket(player1socket);
-        disconnectSocket(player2socket);
-        disconnectSocket(player3socket);
-        disconnectSocket(player4socket);
+        players.forEach(player => {
+            disconnectSocket(player.socket);
+            player.socket = null;
+        });
 
         server.close(done);
      });
 
-    describe('setName', function() {
+    describe.only('setName', function() {
         it('player that set name should receive the player variable filled', function(done) {
-            player1socket = io(serverAddress);
+            let numberOfPlayers = 1;
+            initPlayersSockets(numberOfPlayers);
             
-            player1socket.on('nameSet', function(player) {
-                assert.equal(player.name, 'Marcio');
+            players[0].socket.on('nameSet', function(player) {
+                assert.equal(player.name, players[0].name);
                 assert.property(player, 'name');
                 assert.property(player, 'team');
                 done();
             });
             
-            player1socket.emit('setName', 'Marcio');
+            setPlayerNames(numberOfPlayers);
         });
-
+        
         it('all players should receive the new player', function(done) {
-            player1socket = io(serverAddress);
-            player2socket = io(serverAddress);
-
-            player2socket.on('playerListChanged', function(players) {
-                assert.equal(players[0].name, 'Marcio');
+            let numberOfPlayers = 2;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[1].socket.on('playerListChanged', function(p) {
+                assert.equal(p[0].name, players[0].name);
                 done();
             });
-            player1socket.emit('setName', 'Marcio');
+            
+            players[0].socket.emit('setName', players[0].name);
         });
 
         it('should send cards to players when there are four players are in the room', function(done) {
-            player1socket = io(serverAddress);
-            player2socket = io(serverAddress);
-            player3socket = io(serverAddress);
-            player4socket = io(serverAddress);
-
-            player1socket.on('gameStarted', function(data) {
+            let numberOfPlayers = 4;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[0].socket.on('gameStarted', function(data) {
                 assert.lengthOf(data.hand.cards, 10);
                 assert.property(data.trumpCard, 'rank');
                 assert.property(data.trumpCard, 'suit');
                 done();
             });
-
-            player1socket.emit('setName', 'Marcio');
-            player2socket.emit('setName', 'Gabriel');
-            player3socket.emit('setName', 'Gomes');
-            player4socket.emit('setName', 'Silva');
+            
+            setPlayerNames(numberOfPlayers);
+        });
+        
+        it('should announce that the game started when there are four players are in the room', function(done) {
+            let numberOfPlayers = 4;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[0].socket.on('trickStarted', function() {
+                done();
+            });
+            
+            setPlayerNames(numberOfPlayers);
+        });
+        
+        it('should announce that the game started when there are four players are in the room', function(done) {
+            let numberOfPlayers = 4;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[0].socket.on('trickStarted', function() {
+                done();
+            });
+            
+            setPlayerNames(numberOfPlayers);
+        });
+        
+        it('first player that entered the room should be the first to play', function(done) {
+            let numberOfPlayers = 4;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[0].socket.on('playCard', function() {
+                done();
+            });
+            
+            setPlayerNames(numberOfPlayers);
+        });
+        
+        it('other players than the first one should know that is first players turn', function(done) {
+            let numberOfPlayers = 4;
+            initPlayersSockets(numberOfPlayers);
+            
+            players[1].socket.on('playerTurn', function(playerId) {
+                check(done, function () {
+                    assert.equal(playerId, 0);
+                });
+            });
+            
+            setPlayerNames(numberOfPlayers);
         });
         
     });
 });
 
-function disconnectSocket(socket) {
-    if (socket !== null) {
-        socket.disconnect(true);
-    };   
-}
